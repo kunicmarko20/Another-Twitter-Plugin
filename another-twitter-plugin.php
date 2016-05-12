@@ -5,7 +5,7 @@
 Plugin Name: Another Twitter Plugin
 Plugin URI: 
 Description: Twitter plugin that you want, fully customizable style, works with multiple hashtags or usernames and you are not limited to only your account for tweets.
-Version: 1.0
+Version: 1.0.1
 Author: Marko Kunic
 Author URI: http://kunicmarko.ml
 License: GPL2
@@ -64,7 +64,7 @@ add_action( 'admin_enqueue_scripts', 'dt_atp_extra_javascript_files' );
 
 add_action('init', 'dt_atp_register_shortcodes');
 
-register_uninstall_hook( __FILE__, 'dt_atp_remove_options' );
+register_uninstall_hook( __FILE__, 'dt_atp_uninstall_plugin' );
 /* !2. SHORTCODES */
 // 2.1
 // hint: registers all our custom shortcodes
@@ -137,7 +137,7 @@ function dt_atp_extra_javascript_files() {
 /* !5. ACTIONS */
 //5.1 get all new tweets
 function dt_atp_get_new_tweets(){
-	if(get_option('dt_atp_status_enabled') == 1 && !empty(get_option('dt_atp_textbox'))){
+	if(get_option('dt_atp_status_enabled') == 1 && count(get_option('dt_atp_textbox')) > 0){
 		include_once(plugin_dir_path( __FILE__ ).'twitteroauth/twitteroauth.php');
 		$options_twitter = dt_atp_get_current_options('twitter');
 		$options_settings = dt_atp_get_current_options('settings');
@@ -258,7 +258,25 @@ function dt_atp_get_new_tweets(){
 // 6.1
 // hint: get's the current options and returns values in associative array
 function dt_atp_get_current_options($for) {
-	
+	if(!get_option('dt_atp_number_of_tweets')){
+			add_option('dt_atp_number_of_tweets',165);
+			add_option('dt_atp_number_of_saved_tweets',200);
+			add_option('dt_atp_cron_time',5);	
+			add_option('dt_atp_textbox',array());	
+			add_option('dt_atp_textarea_style','<div class="row twittHolder">
+ <div class="col-xs-2 no-gutter">
+   <a href="[url]" class="avatar" target="_blank">
+    <img src="[image]" alt="">
+   </a>
+ </div>
+ <div class="col-xs-10 no-left">
+  <div class="twitterData">
+   <p>[status]</p>
+  </div>
+ </div>
+</div>');
+
+		}
 	// setup our return variable
 	$current_options = array();
 	
@@ -272,11 +290,6 @@ function dt_atp_get_current_options($for) {
 		);
 	}
 	if($for == 'settings'){
-		if(!get_option('dt_atp_number_of_tweets')){
-			add_option('dt_atp_number_of_tweets',165);
-			add_option('dt_atp_number_of_saved_tweets',200);
-			add_option('dt_atp_cron_time',5);	
-		}
 		$current_options = array(
 			'dt_atp_textbox' => get_option('dt_atp_textbox'),
 			'dt_atp_radio' => get_option('dt_atp_radio'),
@@ -293,20 +306,6 @@ function dt_atp_get_current_options($for) {
 			);
 	}
 		if($for == 'display'){
-		if(!get_option('dt_atp_textarea_style')){
-			add_option('dt_atp_textarea_style','<div class="row twittHolder">
- <div class="col-xs-2 no-gutter">
-   <a href="[url]" class="avatar" target="_blank">
-    <img src="[image]" alt="">
-   </a>
- </div>
- <div class="col-xs-10 no-left">
-  <div class="twitterData">
-   <p>[status]</p>
-  </div>
- </div>
-</div>');
-		}
 		$current_options = array(
 			'dt_atp_textarea_style' => get_option('dt_atp_textarea_style'),
 			'dt_atp_wrapper_class' => get_option('dt_atp_wrapper_class'),
@@ -337,7 +336,7 @@ function dt_atp_dashboard_admin_page() {
         	<p>Plugin is disabled and not visible on your website, some functions may not work if plugin is disabled.</p>
     	</div>');
 		}
-		if(empty(get_option('dt_atp_textbox'))){
+		if(count(get_option('dt_atp_textbox')) == 0){
 		echo('<div class="notice notice-warning is-dismissible">
         	<p>You have to add hashtag/username <a href="?page=dt_atp_plugin_settings_admin_page">here</a> </p>
     	</div>');
@@ -861,7 +860,7 @@ function dt_atp_validate_plugin( $input ) {
 // if wp cron settings pass limit, don't allow it
 function dt_atp_validate_wp_cron( $input ) {
     
-	$time = floor(15 / get_option('dt_atp_cron_time'));
+	$time = floor(15 / get_option('dt_atp_cron_time',5));
 	$calls = ceil ($input/15);
 	$time = $calls * count(get_option('dt_atp_textbox')) * $time;
 	if($time > 179){
@@ -880,7 +879,7 @@ function dt_atp_validate_wp_cron( $input ) {
 }
 function dt_atp_validate_wp_cron_again( $input ) {
     
-	$time = floor(15 / get_option('dt_atp_cron_time'));
+	$time = floor(15 / get_option('dt_atp_cron_time',5));
 	$calls = ceil (get_option('dt_atp_number_of_tweets')/15);
 	$time = $calls * count(get_option('dt_atp_textbox')) * $time;
 	if($time > 179){
@@ -901,7 +900,7 @@ function dt_atp_validate_wp_cron_again( $input ) {
 function dt_atp_validate_status_settings( $input ) {
     
 if(get_option('dt_atp_status_enabled') == 1){
-	if(!empty(get_option('dt_atp_textbox'))){
+	if(count(get_option('dt_atp_textbox')) > 0){
 		return dt_atp_validate_status( $input );
 	}else{
 		return 	add_settings_error(
@@ -968,24 +967,27 @@ if ( ! get_transient( 'schedule' ) && get_option('dt_atp_wp_cron_enabled')) {
     dt_atp_get_new_tweets();
 }
 
-function dt_atp_remove_options() {
+function dt_atp_uninstall_plugin() {
 
 		$options = array();
-		$options['group']['dt_atp_plugin_twitter'] = array('dt_atp_customer_key', 'dt_atp_customer_secret', 'dt_atp_access_token', 'dt_atp_access_token_secret');
-		$options['group']['dt_atp_plugin_settings'] = array('dt_atp_textbox', 'dt_atp_radio');
-		$options['group']['dt_atp_plugin_additional_settings'] = array('dt_atp_number_of_saved_tweets', 'dt_atp_cron_time', 'dt_atp_number_of_tweets');
-		$options['group']['dt_atp_dashboard_form1'] = array('dt_atp_status_enabled');
-		$options['group']['dt_atp_dashboard_form2'] = array('dt_atp_wp_cron_enabled');
-		$options['group']['dt_atp_display_style'] = array('dt_atp_textarea_style', 'dt_atp_wrapper_class');
+		$options['dt_atp_plugin_twitter'] = array('dt_atp_customer_key', 'dt_atp_customer_secret', 'dt_atp_access_token', 'dt_atp_access_token_secret');
+		$options['dt_atp_plugin_settings'] = array('dt_atp_textbox', 'dt_atp_radio');
+		$options['dt_atp_plugin_additional_settings'] = array('dt_atp_number_of_saved_tweets', 'dt_atp_cron_time', 'dt_atp_number_of_tweets');
+		$options['dt_atp_dashboard_form1'] = array('dt_atp_status_enabled');
+		$options['dt_atp_dashboard_form2'] = array('dt_atp_wp_cron_enabled');
+		$options['dt_atp_display_style'] = array('dt_atp_textarea_style', 'dt_atp_wrapper_class');
 		// loop over all the settings
 		
-		foreach( $options['group'] as $g ):
-			foreach($g as $s){
+		foreach( $options as $g=>$k ):
+
+			foreach($k as $s){
 				unregister_setting( $g, $s );
+				delete_option($s);
 			}
-		
+			
 		endforeach;
-		delete_option( 'currently_active' );
-		delete_option( 'last_update_time' );
-	
+		delete_option( 'dt_atp_currently_active' );
+		delete_option( 'dt_atp_last_update_time' );
+		
+		return true;
 }
