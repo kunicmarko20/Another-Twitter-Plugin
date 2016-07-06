@@ -5,7 +5,7 @@
 Plugin Name: Another Twitter Plugin
 Plugin URI: 
 Description: Twitter plugin that you want, fully customizable style, works with multiple hashtags or usernames and you are not limited to only your account for tweets.
-Version: 1.0.1
+Version: 1.0.2
 Author: Marko Kunic
 Author URI: http://kunicmarko.ml
 License: GPL2
@@ -655,7 +655,7 @@ function dt_atp_twitter_settings_admin_page() {
 					<tr>
 						<th scope="row"><label for="dt_atp_customer_key">Customer Key</label></th>
 						<td>
-						<input type="text" name="dt_atp_customer_key" id="dt_atp_customer_key" value="'. $options['dt_atp_customer_key'] .'" />
+						<input type="text" class="add-some-width" name="dt_atp_customer_key" id="dt_atp_customer_key" value="'. $options['dt_atp_customer_key'] .'" />
 						</td>
 					</tr>
 					
@@ -663,21 +663,21 @@ function dt_atp_twitter_settings_admin_page() {
 					<tr>
 							<th scope="row"><label for="dt_atp_customer_secret">Customer Secret</label></th>
 							<td>
-							<input type="text" name="dt_atp_customer_secret" id="dt_atp_customer_secret" value="'. $options['dt_atp_customer_secret'] .'" />
+							<input type="text" class="add-some-width" name="dt_atp_customer_secret" id="dt_atp_customer_secret" value="'. $options['dt_atp_customer_secret'] .'" />
 							</td>
 					</tr>
 						
 					<tr>
 							<th scope="row"><label for="dt_atp_access_token">Access Token</label></th>
 							<td>
-							<input type="text" name="dt_atp_access_token" id="dt_atp_access_token" value="'. $options['dt_atp_access_token'] .'" />
+							<input type="text" class="add-some-width" name="dt_atp_access_token" id="dt_atp_access_token" value="'. $options['dt_atp_access_token'] .'" />
 							</td>
 					</tr>
 
 					<tr>
 							<th scope="row"><label for="dt_atp_access_token_secret">Access Token Secret</label></th>
 							<td>
-							<input type="text" name="dt_atp_access_token_secret" id="dt_atp_access_token_secret" value="'. $options['dt_atp_access_token_secret'] .'" />
+							<input type="text" class="add-some-width" name="dt_atp_access_token_secret" id="dt_atp_access_token_secret" value="'. $options['dt_atp_access_token_secret'] .'" />
 							</td>
 					</tr>
 			

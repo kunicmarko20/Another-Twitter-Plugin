@@ -33,7 +33,12 @@ A few options:
 1. Find Another Twitter-> Twitter Settings in your Admin Panel and add your twitter application.
 1. Find Another Twitter-> Plugin Settings in your Admin Panel and setup your hashtags/usernames.
 1. Find Another Twitter-> Dashboard in your Admin Panel and enable plugin.
-1. Copy the Shortcode ([dt_atp_twitter]) to your post, widget or add it to your code.
+1. Copy the Shortcode **[dt_atp_twitter]** :
+
+*   If you want to add it to sidebar follow this :
+http://www.wpbeginner.com/wp-tutorials/how-to-use-shortcodes-in-your-wordpress-sidebar-widgets/data
+*   If you want to add it directly to your source code, just add this to your code: **`<?php echo do_shortcode( '[dt_atp_twitter]' ); ?>`**
+*   If you want to add it to some kind of post, just add this to your post text: **[dt_atp_twitter]**
 
 == Frequently Asked Questions ==
 
@@ -50,6 +55,9 @@ No, you will have to add your website to cronjob if you have low traffic.
 4. Twitter Settings
 
 == Changelog ==
+= 1.0.2 =
+* Few UX Updates
+
 = 1.0.1 =
 * Minor Updates
 
