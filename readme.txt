@@ -3,8 +3,8 @@ Contributors: kunicmarko20
 Donate Link: 
 Tags: Twitter, Twitter Social, Twitter Custom, Best Twitter, Twitter customizable plugin, fully customizable Twitter plugin, Twitter plugin, Another Twitter Plugin, ATP, Tweets,
 Requires at least: 4.0
-Tested up to: 4.5.2
-Stable tag: 4.5.2
+Tested up to: 4.6
+Stable tag: 4.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -55,6 +55,9 @@ No, you will have to add your website to cronjob if you have low traffic.
 4. Twitter Settings
 
 == Changelog ==
+= 1.0.3 = 
+* Custom Date Format setup
+
 = 1.0.2 =
 * Few UX Updates
 

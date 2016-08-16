@@ -3,9 +3,9 @@
 
 /*
 Plugin Name: Another Twitter Plugin
-Plugin URI: 
+Plugin URI:
 Description: Twitter plugin that you want, fully customizable style, works with multiple hashtags or usernames and you are not limited to only your account for tweets.
-Version: 1.0.2
+Version: 1.0.3
 Author: Marko Kunic
 Author URI: http://kunicmarko.ml
 License: GPL2
@@ -15,30 +15,30 @@ Text Domain: another-twitter-plugin
 
 
 
-	
+
 /* !0. TABLE OF CONTENTS */
 
 /*
-	
+
 	1. HOOKS
-	
+
 	2. SHORTCODES
-		
+
 	3. FILTERS
-		
+
 	4. EXTERNAL SCRIPTS
-		
+
 	5. ACTIONS
-		
+
 	6. HELPERS
-		
+
 	7. CUSTOM POST TYPES
-	
+
 	8. ADMIN PAGES
-	
+
 	9. SETTINGS
-	
-	10. MISCELLANEOUS 
+
+	10. MISCELLANEOUS
 
 */
 
@@ -69,27 +69,27 @@ register_uninstall_hook( __FILE__, 'dt_atp_uninstall_plugin' );
 // 2.1
 // hint: registers all our custom shortcodes
 function dt_atp_register_shortcodes() {
-	
+
 	add_shortcode('dt_atp_twitter', 'dt_atp_shortcode');
-	
+
 }
 
 // 2.2
 // hint: our shortcode that displays plugin
-function dt_atp_shortcode() { 
+function dt_atp_shortcode() {
 	$dt_atp_status = dt_atp_get_current_options('dashboard');
 	if($dt_atp_status['dt_atp_status_enabled'] == 1){
 		$dt_atp_style = dt_atp_get_current_options('display');
 		$jsons = json_decode(file_get_contents(dt_atp_plugin_dir.'twitter.json'),true);
-	
+
 		$all = "<div class='".str_replace(',',' ',$dt_atp_style['dt_atp_wrapper_class'])."'>";
-		
+
 		foreach($jsons as $json){
 			$json['status'] = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', '<a href="$0" target="_blank" title="$0">$0</a>', $json['status']);
-			$types = array("[screen_name]" =>$json['screen_name'],"[status]" =>$json['status'],"[created_at]" => date('h:i A - d M Y',$json['created_at']),"[url]" => "http://www.twitter.com/".$json['url'],"[image]" => $json['image'],"[id]" =>$json['id']);
+			$types = array("[screen_name]" =>$json['screen_name'],"[status]" =>$json['status'],"[created_at]" => date($dt_atp_style['dt_atp_date_format'],$json['created_at']),"[url]" => "http://www.twitter.com/".$json['url'],"[image]" => $json['image'],"[id]" =>$json['id']);
 			$all .= strtr($dt_atp_style['dt_atp_textarea_style'], $types);
 		}
-		
+
 		$all .= "</div>";
 		$all = $text = preg_replace('/(\#)([^\s]+)/', '<a href="https://twitter.com/search?f=tweets&vertical=default&q=%23$2&src=typd" target="_blank">#$2</a>', $all);
 		$all = $text = preg_replace('/(\@)([^\s]+)/', '<a href="https://twitter.com/$2" target="_blank">@$2</a>', $all);
@@ -101,18 +101,18 @@ function dt_atp_shortcode() {
 
 /* !3. FILTERS */
 function dt_atp_admin_menus() {
-	
+
 	/* main menu */
-	
+
 		$top_menu_item = 'dt_atp_dashboard_admin_page';
-	    
+
 	    add_menu_page( '', 'Another Twitter', 'manage_options', 'dt_atp_dashboard_admin_page', 'dt_atp_dashboard_admin_page', 'dashicons-twitter' );
-    
+
     /* submenu items */
-    
+
 	    // dashboard
 	    add_submenu_page( $top_menu_item, '', 'Dashboard', 'manage_options', $top_menu_item, $top_menu_item );
-	   	
+
 	   	// plugin settings
 	    add_submenu_page($top_menu_item, '', 'Display Style', 'manage_options', 'dt_atp_display_style_admin_page', 'dt_atp_display_style_admin_page' );
 	    // plugin settings
@@ -143,43 +143,43 @@ function dt_atp_get_new_tweets(){
 		$options_settings = dt_atp_get_current_options('settings');
 		$currently_active = get_option('dt_atp_currently_active');
 		$new_currently_active = array();
-		
+
 	    $twitter_customer_key           = $options_twitter['dt_atp_customer_key'];
 	    $twitter_customer_secret        = $options_twitter['dt_atp_customer_secret'];
 	    $twitter_access_token           = $options_twitter['dt_atp_access_token'];
 	    $twitter_access_token_secret    = $options_twitter['dt_atp_access_token_secret'];
-	    
+
 	    $connection = new TwitterOAuth($twitter_customer_key, $twitter_customer_secret, $twitter_access_token, $twitter_access_token_secret);
-	    
+
 	    $json = json_decode(file_get_contents(plugin_dir_path( __FILE__ ).'twitter.json'),true);
-	
+
 		if($options_settings['dt_atp_radio'] == 'hashtags') {
 			$tags = $options_settings['dt_atp_textbox'];
 	    	$id = array();
 	        foreach($tags as $tag){
 	            if(!empty($tag)){
 	                $title = $tag;
-	                
+
 	                $options = array();
 	                $options['q'] = '#'.$title.' -filter:retweets';
 	                $options['result_type'] = 'recent';
 	                $options['count'] = $options_settings['dt_atp_number_of_tweets'];
-	                
+
 	                 if(!empty($currently_active)){
 	                    if(array_key_exists($title,$currently_active)){
 	                         $options['since_id'] = $currently_active[$title];
 	                    }
 	                }
-	
+
 	                $my_tweets = $connection->get('search/tweets', $options);
 	                $my_tweets = json_decode(json_encode($my_tweets),true);
-					
+
 					if(!empty($my_tweets['statuses'][0]['id'])){
 	                $new_currently_active[$title] = $my_tweets['statuses'][0]['id'];
-	                
-					
+
+
 	                foreach($my_tweets['statuses'] as $t){
-	                    if(in_array($t['id'], $id)){ 
+	                    if(in_array($t['id'], $id)){
 	                        continue;
 	                    }
 	                    else {
@@ -212,12 +212,12 @@ function dt_atp_get_new_tweets(){
 	                         $options['since_id'] = $currently_active[$username];
 	                    }
 	                }
-	                
+
 	                $my_tweets = $connection->get('statuses/user_timeline', $options);
 	                $my_tweets = json_decode(json_encode($my_tweets),true);
 	                if(!empty($my_tweets[0]['id'])){
 	                    $new_currently_active[$username] = $my_tweets[0]['id'];
-	                    
+
 	                    foreach($my_tweets as $t){
 	                            $json[] = array(
 	                                'id' => $t['id'],
@@ -233,12 +233,12 @@ function dt_atp_get_new_tweets(){
 	                }
 	    		}
 	        }
-		
+
 		}
 		else {
 			return ;
 		}
-		
+
 		update_option('dt_atp_currently_active',$new_currently_active);
 		 foreach ($json as $key => $row) {
 	        $mid[$key]  = $row['created_at'];
@@ -247,7 +247,7 @@ function dt_atp_get_new_tweets(){
 	    $json = array_slice($json, 0, $options_settings['dt_atp_number_of_saved_tweets']);
 	    file_put_contents(plugin_dir_path( __FILE__ ).'twitter.json', json_encode($json));
 		update_option('dt_atp_last_update_time',time());
-	}	
+	}
 		$red = ($_SERVER["HTTP_REFERER"] != '' ? $_SERVER["HTTP_REFERER"] : site_url());
 		header("Location: " . $red);
 }
@@ -261,8 +261,8 @@ function dt_atp_get_current_options($for) {
 	if(!get_option('dt_atp_number_of_tweets')){
 			add_option('dt_atp_number_of_tweets',165);
 			add_option('dt_atp_number_of_saved_tweets',200);
-			add_option('dt_atp_cron_time',5);	
-			add_option('dt_atp_textbox',array());	
+			add_option('dt_atp_cron_time',5);
+			add_option('dt_atp_textbox',array());
 			add_option('dt_atp_textarea_style','<div class="row twittHolder">
  <div class="col-xs-2 no-gutter">
    <a href="[url]" class="avatar" target="_blank">
@@ -279,7 +279,7 @@ function dt_atp_get_current_options($for) {
 		}
 	// setup our return variable
 	$current_options = array();
-	
+
 	if($for == 'twitter'){
 		// build our current options associative array
 		$current_options = array(
@@ -294,7 +294,7 @@ function dt_atp_get_current_options($for) {
 			'dt_atp_textbox' => get_option('dt_atp_textbox'),
 			'dt_atp_radio' => get_option('dt_atp_radio'),
 			'dt_atp_number_of_tweets' => (int)get_option('dt_atp_number_of_tweets'),
-			'dt_atp_number_of_saved_tweets' => (int)get_option('dt_atp_number_of_saved_tweets'), 
+			'dt_atp_number_of_saved_tweets' => (int)get_option('dt_atp_number_of_saved_tweets'),
 			'dt_atp_cron_time' => (int)get_option('dt_atp_cron_time'),
 			);
 	}
@@ -309,13 +309,13 @@ function dt_atp_get_current_options($for) {
 		$current_options = array(
 			'dt_atp_textarea_style' => get_option('dt_atp_textarea_style'),
 			'dt_atp_wrapper_class' => get_option('dt_atp_wrapper_class'),
-
+			'dt_atp_date_format' => get_option('dt_atp_date_format','h:i A - d M Y'),
 			);
 	}
-	
+
 	// return current options
 	return $current_options;
-	
+
 }
 
 
@@ -324,12 +324,12 @@ function dt_atp_get_current_options($for) {
 // 8.1
 // hint: dashboard admin page
 function dt_atp_dashboard_admin_page() {
-	
+
 	$options = dt_atp_get_current_options('dashboard');
 	$last_updated = dt_atp_last_update_time();
 	$tags = get_option('dt_atp_textbox');
 	echo('<div class="wrap">
-		
+
 		<h2>Another Twitter Plugin</h2>');
 		if($options['dt_atp_status_enabled'] == 0 ){
 		echo('<div class="notice notice-error is-dismissible">
@@ -343,22 +343,22 @@ function dt_atp_dashboard_admin_page() {
 		}
 		settings_errors('TwitterError');
 		echo('<div id="loader"></div><form action="options.php" method="post">');
-		
+
 			// outputs a unique nounce for our plugin options
 			settings_fields('dt_atp_dashboard_form1');
 			// generates a unique hidden field with our form handling url
 			@do_settings_fields('dt_atp_dashboard_form1');
-			
+
 			echo('<table class="form-table">
-		
+
 				<tbody>
-			
+
 					<tr>
 						<th scope="row"><strong>Status</strong></th>
 						<td style="width:110px !important;">');
-						
+
 						if($options['dt_atp_status_enabled'] == 1){
-						
+
 						echo ('<label style="color:green;">Enabled</label></td><td>
 						'); submit_button( "Disable", "secondary","submit",false,array( 'style' => 'color:red;' ) ); echo('</td>
 						<td><input type="hidden" name="dt_atp_status_enabled" value="0" /></td>');
@@ -366,7 +366,7 @@ function dt_atp_dashboard_admin_page() {
 						else {
 						echo ('<label style="color:red;">Disabled</label></td><td>
 						'); submit_button( "Enable", "secondary","submit",false,array( 'style' => 'color:green;' ) ); echo('</td>
-						<td><input type="hidden" name="dt_atp_status_enabled" value="1" /></td>');	
+						<td><input type="hidden" name="dt_atp_status_enabled" value="1" /></td>');
 						}
 
 			echo('</tr></form><form action="options.php" method="post"><tr>
@@ -377,7 +377,7 @@ function dt_atp_dashboard_admin_page() {
 							// generates a unique hidden field with our form handling url
 							@do_settings_fields('dt_atp_dashboard_form2');
 						if($options['dt_atp_wp_cron_enabled'] == 1){
-						
+
 						echo ('<label style="color:green;">Enabled</label></td><td>
 						'); submit_button( "Disable", "secondary","submit",false,array( 'style' => 'color:red;' ) ); echo('</td>
 						<td><input type="hidden" name="dt_atp_wp_cron_enabled" value="0" /></td>');
@@ -385,8 +385,8 @@ function dt_atp_dashboard_admin_page() {
 						else {
 						echo ('<label style="color:red;">Disabled</label></td><td>
 						'); submit_button( "Enable", "secondary","submit",false,array( 'style' => 'color:green;' ) ); echo('</td>
-						<td><input type="hidden" name="dt_atp_wp_cron_enabled" value="1" /></td>');	
-						}		
+						<td><input type="hidden" name="dt_atp_wp_cron_enabled" value="1" /></td>');
+						}
 			echo('</tr></form><form action="/wp-admin/admin-ajax.php?action=dt_atp_get_new_tweets" method="post">
 					<tr>
 							<th scope="row"><strong>Last Update</strong></th>
@@ -394,42 +394,42 @@ function dt_atp_dashboard_admin_page() {
 							<label>'. $last_updated .'</label>
 							</td>
 							<td>') ;
-							submit_button("Update Now", "secondary","btnUpdate",false ); 
+							submit_button("Update Now", "secondary","btnUpdate",false );
 							echo('</td>
 					</tr>
-					
+
 						<tr>
 							<th scope="row"><strong>Shortcode</strong></th>
 							<td>
 							<p>[dt_atp_twitter]</p>
 							</td>
 					</tr>
-					
+
 					<tr>
 							<th scope="row"><strong>Currently Active</strong></th>
 							<td>');
-							
+
 							if(!empty($tags)){
 								echo ('<ol style="margin-top: 0;margin-left: 15px;">');
 								foreach($tags as $tag){
 									echo "<li>".$tag."</li>";
 								}
-								echo ('</ol>');	
+								echo ('</ol>');
 							}
 							else {
 								echo "No Active Tags";
 							}
-							
+
 						echo ('</td>
 					</tr>
-					
+
 		</form><form action="/wp-admin/admin-ajax.php?action=dt_atp_reset_tweets" method="post">');
-			
-			
+
+
 			echo('<tr>
 							<th scope="row"><strong>Reset</strong></th>
 							<td>') ;
-							submit_button( "Reset", "secondary","btnReset",false ); 
+							submit_button( "Reset", "secondary","btnReset",false );
 							echo('</td>
 					</tr>
 					<tr><td colspan="15">
@@ -437,35 +437,35 @@ function dt_atp_dashboard_admin_page() {
 								<strong>SUGGESTION:</strong> Reset when you change hashtag/username so you don\'t see old Tweets .</p></td>
 					</tr>
 				</tbody>
-				
+
 			</table>');
-		
+
 			// outputs the WP submit button html
 
-		
-		
+
+
 		echo('</form>			<script>
 
 document.getElementById("btnUpdate").onclick = function() {document.getElementById("loader").style.display = "block";};
 document.getElementById("btnReset").onclick = function() {document.getElementById("loader").style.display = "block";};
 document.getElementById("submit").onclick = function() {document.getElementById("loader").style.display = "block";};
-</script>	
-	
+</script>
+
 	</div>');
-	
-	
+
+
 }
 
 
 // 8.2
 // hint: plugin settings
 function dt_atp_plugin_settings_admin_page() {
-	
-$options = dt_atp_get_current_options('settings');	
-	
+
+$options = dt_atp_get_current_options('settings');
+
 echo('<div class="wrap">
 
-			
+
 			<h2>Plugin Settings</h2>');
 		$options1 = dt_atp_get_current_options('dashboard');
 		if($options1['dt_atp_status_enabled'] == 0 ){
@@ -474,25 +474,25 @@ echo('<div class="wrap">
     	</div>');
 		}
 			settings_errors('updateSettings');
-			
+
 echo('<form action="options.php" method="post" style="width: 49%;
     display: inline-block; float:left;">');
-		
+
 			// outputs a unique nounce for our plugin options
 			settings_fields('dt_atp_plugin_settings');
 			// generates a unique hidden field with our form handling url
 			@do_settings_fields('dt_atp_plugin_settings');
 			if($options['dt_atp_textbox']){
 			$options['dt_atp_textbox'] = array_slice($options['dt_atp_textbox'], 0, 5);
-				
+
 			}
-			
+
 			$dt_atp_fields =  count($options['dt_atp_textbox']) == 0 ? '1' : count($options['dt_atp_textbox']);
-			
+
 			echo('<table class="form-table" >
-			
+
 				<tbody id="test">
-			
+
 					<tr>
 						<th scope="row"><label>Choose Option:</label></th>
 						<td>
@@ -502,9 +502,9 @@ echo('<form action="options.php" method="post" style="width: 49%;
 					    <label for="Twitter-Username">Username</label>
 						</td>
 					</tr>
-				
+
 			 		<script>
-			 		
+
 var i = '.$dt_atp_fields.'+1;
 
 function myFunction(){
@@ -533,8 +533,8 @@ function removetext(e){
 	i--;
 }
 </script>
-			 		
-			
+
+
 					<tr >
 							<th scope="row"></th>
 							<td>
@@ -543,42 +543,42 @@ function removetext(e){
 							</td>
 					</tr>');
 					for ($i=1; $i < $dt_atp_fields; $i++){
-					echo('	
+					echo('
 					<tr >
 							<th scope="row"></th>
 							<td>
 							<input type="text" name="dt_atp_textbox[]" value="'. $options['dt_atp_textbox'][$i] .'"/>
 							<input type="button" onclick="removetext(this.id)" id="dt_atp_button_remove_'.$i.'" value="-"/>
 							</td>
-					</tr>'	
-						);	
-					}	
+					</tr>'
+						);
+					}
 
-					
-				
-				
+
+
+
 			echo('</tbody></table>');
-		
+
 			// outputs the WP submit button html
 			@submit_button('Save Changes','primary','btnChange');
-		
-		
+
+
 		echo('</form>');
 	echo('<form action="options.php" method="post" style="width: 49%;
     display: inline-block;">');
-		
+
 			// outputs a unique nounce for our plugin options
 			settings_fields('dt_atp_plugin_additional_settings');
 			// generates a unique hidden field with our form handling url
 			@do_settings_fields('dt_atp_plugin_additional_settings');
 				echo('<table class="form-table">
-			
+
 				<tbody>
-				
+
 					<tr>
 							<th scope="row"><label for="dt_atp_number_of_tweets">Number of Tweets</label></th>
 							<td>
-							
+
 							<input type="number" name="dt_atp_number_of_tweets" id="dt_atp_number_of_tweets" value="'. $options['dt_atp_number_of_tweets'].'"/>
 							</td>
 					</tr>
@@ -591,7 +591,7 @@ function removetext(e){
 							<tr>
 							<th scope="row"><label for="dt_atp_number_of_saved_tweets">Number of Saved Tweets</label></th>
 							<td>
-							
+
 							<input type="number" name="dt_atp_number_of_saved_tweets" id="dt_atp_number_of_saved_tweets" value="'. $options['dt_atp_number_of_saved_tweets'].'"/>
 							</td>
 					</tr>
@@ -603,7 +603,7 @@ function removetext(e){
 						<tr>
 							<th scope="row"><label for="dt_atp_cron_time">WP Cron</label></th>
 							<td>
-							
+
 							<input type="number" name="dt_atp_cron_time" id="dt_atp_cron_time" value="'. $options['dt_atp_cron_time'].'"/> minutes
 							</td>
 					</tr>
@@ -614,23 +614,23 @@ function removetext(e){
 								WP Cron activates every X minutes if you have a visitor, if you don\'t have high traffic you should add your website to cronjob.</p></td>
 					</tr>');
 		echo('</tbody></table>');
-		
+
 			// outputs the WP submit button html
-			@submit_button();	
+			@submit_button();
 	echo('</form>
 	</div>');
-	
-	
+
+
 }
 // 8.3
 // hint: twitter settings
 function dt_atp_twitter_settings_admin_page() {
-	
+
 	// get the default values for our options
-	
+
 	$options = dt_atp_get_current_options('twitter');
 	echo('<div class="wrap">
-		
+
 		<h2>Twitter Settings</h2>');
 								$options1 = dt_atp_get_current_options('dashboard');
 		if($options1['dt_atp_status_enabled'] == 0 ){
@@ -640,33 +640,33 @@ function dt_atp_twitter_settings_admin_page() {
 		}
 		echo('<p class="description">This is the page where you enter details about your Twitter Application <br />
 								IMPORTANT: If you don\'t know how to make your twitter application, check our instructions under the form.</p>
-		
+
 		<form action="options.php" method="post">');
-		
+
 			// outputs a unique nounce for our plugin options
 			settings_fields('dt_atp_plugin_twitter');
 			// generates a unique hidden field with our form handling url
 			@do_settings_fields('dt_atp_plugin_twitter');
-			
+
 			echo('<table class="form-table">
-			
+
 				<tbody>
-			
+
 					<tr>
 						<th scope="row"><label for="dt_atp_customer_key">Customer Key</label></th>
 						<td>
 						<input type="text" class="add-some-width" name="dt_atp_customer_key" id="dt_atp_customer_key" value="'. $options['dt_atp_customer_key'] .'" />
 						</td>
 					</tr>
-					
-			
+
+
 					<tr>
 							<th scope="row"><label for="dt_atp_customer_secret">Customer Secret</label></th>
 							<td>
 							<input type="text" class="add-some-width" name="dt_atp_customer_secret" id="dt_atp_customer_secret" value="'. $options['dt_atp_customer_secret'] .'" />
 							</td>
 					</tr>
-						
+
 					<tr>
 							<th scope="row"><label for="dt_atp_access_token">Access Token</label></th>
 							<td>
@@ -680,25 +680,25 @@ function dt_atp_twitter_settings_admin_page() {
 							<input type="text" class="add-some-width" name="dt_atp_access_token_secret" id="dt_atp_access_token_secret" value="'. $options['dt_atp_access_token_secret'] .'" />
 							</td>
 					</tr>
-			
+
 				</tbody>
-				
+
 			</table>');
-		
+
 			// outputs the WP submit button html
 			@submit_button();
-		
-		
+
+
 		echo('</form>
-	
+
 	</div>');
-	
+
 		$output = '
 		<div class="wrap">
-			
+
 			<h2>How to setup your Twitter Application</h2>
 			<p> There is few simple steps you need to follow</p>
-			<ol> 
+			<ol>
 				<li> Go to <a href="http://apps.twitter.com/" target="_blank">http://apps.twitter.com/</a> </li>
 				<li> Login and click Create New App
 					<ol><br/>
@@ -713,17 +713,17 @@ function dt_atp_twitter_settings_admin_page() {
 			</ol>
 		</div>
 	';
-	
+
 	echo $output;
-	
+
 }
 
 //8.4
-// Display Style 
+// Display Style
 function dt_atp_display_style_admin_page() {
-	
+
 	$options = dt_atp_get_current_options('display');
-	
+
 echo('<div class="wrap"><h2>Display Settings</h2>');
 		$options1 = dt_atp_get_current_options('dashboard');
 		if($options1['dt_atp_status_enabled'] == 0 ){
@@ -735,7 +735,7 @@ echo('<p class="description">You can customize your format as you wish, you can 
 								<strong>IMPORTANT:</strong> Use only twitter option from buttons above textarea, custom options won\'t work.</p>
 	<form action="options.php" method="post" style="width: 59%;
     display: inline-block;"><h3>Format your Tweets</h3>');
-		
+
 			// outputs a unique nounce for our plugin options
 			settings_fields('dt_atp_display_style');
 			// generates a unique hidden field with our form handling url
@@ -748,7 +748,7 @@ echo('<p class="description">You can customize your format as you wish, you can 
 						<button  onclick="insertAtCaret(\'textareaid\',\'image\');return false;" class="thickbox button" title="Profile Image of User">Image</button>
 						<button  onclick="insertAtCaret(\'textareaid\',\'url\');return false;" class="thickbox button" title="Twitter URL of Tweet">Url</button>
 						<button  onclick="insertAtCaret(\'textareaid\',\'created_at\');return false;" class="thickbox button" title="Date when Published">Date</button>
-						
+
 					</span>
 				  </span><br/>
 				<textarea id="textareaid" name="dt_atp_textarea_style" cols="15" rows="15" class="large-text code" style="width:100%;resize: none;">'. $options['dt_atp_textarea_style'] .'</textarea>
@@ -756,13 +756,16 @@ echo('<p class="description">You can customize your format as you wish, you can 
 				<p>
 					<strong>Add class to wrapper div:</strong>
 					<input type="text" name="dt_atp_wrapper_class" style="width:300px;" placeholder="Separate classes with comma" id="dt_atp_wrapper_class" value="'. $options['dt_atp_wrapper_class'].'" />
-				</p>'); 
+					<br/><strong>Output date format: </strong>
+					<input type="text" name="dt_atp_date_format" style="width:300px;" placeholder="Separate classes with comma" id="dt_atp_date_format" value="'. $options['dt_atp_date_format'].'" />
+					<p class="description">More formats can be found <a href="http://php.net/manual/en/function.date.php"> here </a> .</p>
+				</p>');
 			@submit_button();
 			echo('<span>Want to make it look better? add "scroll" class to wrapper and define it in your css as: <br/>.scroll {<br/>
     overflow: scroll;<br/>
     max-height: 410px;<br/>
 }</span></form></div>');
-	
+
 }
 
 /* !9. SETTINGS */
@@ -775,13 +778,13 @@ function dt_atp_register_twitter() {
 	register_setting('dt_atp_plugin_twitter', 'dt_atp_access_token','dt_atp_validate_plugin');
 	register_setting('dt_atp_plugin_twitter', 'dt_atp_access_token_secret','dt_atp_validate_plugin');
 
-	
+
 }
-						
+
 function dt_atp_register_settings() {
 	// plugin options
-	
-	
+
+
 	register_setting('dt_atp_plugin_settings', 'dt_atp_textbox','dt_atp_validation_function');
 	register_setting('dt_atp_plugin_settings', 'dt_atp_radio','dt_atp_validate_wp_cron_again');
 		if(isset($_POST['btnChange'])){
@@ -793,30 +796,31 @@ function dt_atp_register_settings() {
         $message,
         $type
     );
-    
+
 }
 
 
-}						
+}
 
 function dt_atp_register_additional_settings(){
 	register_setting('dt_atp_plugin_additional_settings', 'dt_atp_number_of_saved_tweets');
 	register_setting('dt_atp_plugin_additional_settings', 'dt_atp_cron_time');
 	register_setting('dt_atp_plugin_additional_settings', 'dt_atp_number_of_tweets','dt_atp_validate_wp_cron');
-	
-}						
+
+}
 
 function dt_atp_register_dashboard_form1(){
 	register_setting('dt_atp_dashboard_form1', 'dt_atp_status_enabled','dt_atp_validate_status');
-	
+
 }
 function dt_atp_register_dashboard_form2(){
 	register_setting('dt_atp_dashboard_form2', 'dt_atp_wp_cron_enabled','dt_atp_validate_status_settings');
-	
+
 }
 function dt_atp_register_display_style(){
 	register_setting('dt_atp_display_style', 'dt_atp_textarea_style');
 	register_setting('dt_atp_display_style', 'dt_atp_wrapper_class');
+	register_setting('dt_atp_display_style', 'dt_atp_date_format');
 }
 
 
@@ -824,15 +828,15 @@ function dt_atp_register_display_style(){
 
 //if hashtag/username field empty don't save it
 function dt_atp_validation_function( $input ) {
-    
+
    $input = array_filter($input);
-	
+
     return $input;
 }
 
 //if twitter information empty don't allow plugin to be enabled
 function dt_atp_validate_status( $input ) {
-    
+
    if($input == 1){
    	$options = dt_atp_get_current_options('twitter');
    	if(empty($options) || empty($options['dt_atp_customer_secret']) || empty($options['dt_atp_access_token']) || empty($options['dt_atp_access_token_secret']) || empty($options['dt_atp_customer_key'])){
@@ -849,7 +853,7 @@ function dt_atp_validate_status( $input ) {
 }
 // if twitter information empty disable plugin
 function dt_atp_validate_plugin( $input ) {
-    
+
   if(empty($input)){
   	update_option('dt_atp_status_enabled',0);
   }else {
@@ -859,7 +863,7 @@ function dt_atp_validate_plugin( $input ) {
 }
 // if wp cron settings pass limit, don't allow it
 function dt_atp_validate_wp_cron( $input ) {
-    
+
 	$time = floor(15 / get_option('dt_atp_cron_time',5));
 	$calls = ceil ($input/15);
 	$time = $calls * count(get_option('dt_atp_textbox')) * $time;
@@ -870,7 +874,7 @@ function dt_atp_validate_wp_cron( $input ) {
         'Your current settings pass Limit of 180 API Calls, decrease number of Tweets or increase time of WP Cron.',
         'error'
     );
-    return 29; 
+    return 29;
 	}
 	else{
 		return $input;
@@ -878,7 +882,7 @@ function dt_atp_validate_wp_cron( $input ) {
 
 }
 function dt_atp_validate_wp_cron_again( $input ) {
-    
+
 	$time = floor(15 / get_option('dt_atp_cron_time',5));
 	$calls = ceil (get_option('dt_atp_number_of_tweets')/15);
 	$time = $calls * count(get_option('dt_atp_textbox')) * $time;
@@ -898,7 +902,7 @@ function dt_atp_validate_wp_cron_again( $input ) {
 }
 //if twitter information empty and/or plugin disabled, don't allow wp cron
 function dt_atp_validate_status_settings( $input ) {
-    
+
 if(get_option('dt_atp_status_enabled') == 1){
 	if(count(get_option('dt_atp_textbox')) > 0){
 		return dt_atp_validate_status( $input );
@@ -910,7 +914,7 @@ if(get_option('dt_atp_status_enabled') == 1){
 	        'notice-error'
 	    );
 	}
-	
+
 }
 else{
 	return 	add_settings_error(
@@ -924,7 +928,7 @@ else{
 }
 
 
-//get the last time json was modified 
+//get the last time json was modified
 function dt_atp_last_update_time(){
 		$time = get_option('dt_atp_last_update_time');
 	if ($time) {
@@ -976,18 +980,19 @@ function dt_atp_uninstall_plugin() {
 		$options['dt_atp_dashboard_form1'] = array('dt_atp_status_enabled');
 		$options['dt_atp_dashboard_form2'] = array('dt_atp_wp_cron_enabled');
 		$options['dt_atp_display_style'] = array('dt_atp_textarea_style', 'dt_atp_wrapper_class');
+		$options['dt_atp_display_style'] = array('dt_atp_textarea_style', 'dt_atp_date_format');
 		// loop over all the settings
-		
+
 		foreach( $options as $g=>$k ):
 
 			foreach($k as $s){
 				unregister_setting( $g, $s );
 				delete_option($s);
 			}
-			
+
 		endforeach;
 		delete_option( 'dt_atp_currently_active' );
 		delete_option( 'dt_atp_last_update_time' );
-		
+
 		return true;
 }
