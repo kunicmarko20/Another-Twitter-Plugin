@@ -5,7 +5,7 @@
 Plugin Name: Another Twitter Plugin
 Plugin URI:
 Description: Twitter plugin that you want, fully customizable style, works with multiple hashtags or usernames and you are not limited to only your account for tweets.
-Version: 1.0.3
+Version: 1.0.3.1
 Author: Marko Kunic
 Author URI: http://kunicmarko.ml
 License: GPL2
@@ -44,7 +44,8 @@ Text Domain: another-twitter-plugin
 
 
 define( 'dt_atp_plugin_dir', plugin_dir_path( __FILE__ ) );
-
+$dir = explode('wp-content',plugin_dir_url( __FILE__ ));
+define( 'dt_atp_plugin_url', $dir[0] );
 /* !1. HOOKS */
 
 
@@ -387,7 +388,7 @@ function dt_atp_dashboard_admin_page() {
 						'); submit_button( "Enable", "secondary","submit",false,array( 'style' => 'color:green;' ) ); echo('</td>
 						<td><input type="hidden" name="dt_atp_wp_cron_enabled" value="1" /></td>');
 						}
-			echo('</tr></form><form action="/wp-admin/admin-ajax.php?action=dt_atp_get_new_tweets" method="post">
+			echo('</tr></form><form action="'.dt_atp_plugin_url.'wp-admin/admin-ajax.php?action=dt_atp_get_new_tweets" method="post">
 					<tr>
 							<th scope="row"><strong>Last Update</strong></th>
 							<td>
@@ -423,7 +424,7 @@ function dt_atp_dashboard_admin_page() {
 						echo ('</td>
 					</tr>
 
-		</form><form action="/wp-admin/admin-ajax.php?action=dt_atp_reset_tweets" method="post">');
+		</form><form action="'.dt_atp_plugin_url.'wp-admin/admin-ajax.php?action=dt_atp_reset_tweets" method="post">');
 
 
 			echo('<tr>

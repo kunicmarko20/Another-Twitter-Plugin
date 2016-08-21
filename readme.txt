@@ -55,6 +55,9 @@ No, you will have to add your website to cronjob if you have low traffic.
 4. Twitter Settings
 
 == Changelog ==
+= 1.0.3.1 = 
+* Ajax problem fix
+
 = 1.0.3 = 
 * Custom Date Format setup
 
