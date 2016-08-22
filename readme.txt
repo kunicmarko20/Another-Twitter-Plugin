@@ -55,6 +55,10 @@ No, you will have to add your website to cronjob if you have low traffic.
 4. Twitter Settings
 
 == Changelog ==
+
+= 1.0.4 = 
+* Fix problem with regex for #/@ in status output
+
 = 1.0.3.1 = 
 * Ajax problem fix
 
