@@ -4,8 +4,8 @@
 /*
 Plugin Name: Another Twitter Plugin
 Plugin URI: https://wordpress.org/plugins/another-twitter-extension/
-Description: Twitter plugin that you want, fully customizable style, works with multiple hashtags or usernames and you are not limited to only your account for tweets.
-Version: 1.0.4
+Description: Twitter plugin for developers, plugin that you want and need, fully customizable style, works with multiple hashtags or usernames and you are not limited to only your account for tweets.
+Version: 1.0.5
 Author: Marko Kunic
 Author URI: http://kunicmarko.ml
 License: GPL2
@@ -64,7 +64,7 @@ add_action('wp_ajax_dt_atp_get_new_tweets', 'dt_atp_get_new_tweets');
 add_action( 'admin_enqueue_scripts', 'dt_atp_extra_javascript_files' );
 
 add_action('init', 'dt_atp_register_shortcodes');
-
+add_action('my_schedule_event', 'dt_atp_get_new_tweets');
 register_uninstall_hook( __FILE__, 'dt_atp_uninstall_plugin' );
 /* !2. SHORTCODES */
 // 2.1
@@ -969,10 +969,21 @@ function dt_atp_reset_tweets(){
 		exit;
 }
 
-// SCHEDULE 'WP CRON' if you can call it that way
+// WP cron
+function my_cron_schedules($schedules){
+		$time = get_option('dt_atp_cron_time',5);
+    if(!isset($schedules[$time."min"])){
+        $schedules[$time."min"] = array(
+            'interval' => $time*60,
+            'display' => __("Once every $time minutes"));
+    }
+    return $schedules;
+}
+add_filter('cron_schedules','my_cron_schedules');
 if ( ! get_transient( 'schedule' ) && get_option('dt_atp_wp_cron_enabled')) {
-    set_transient( 'schedule', true, get_option('dt_atp_cron_time') * MINUTE_IN_SECONDS );
-    dt_atp_get_new_tweets();
+		$time = get_option('dt_atp_cron_time',5);
+    set_transient( 'schedule', true, $time * MINUTE_IN_SECONDS );
+    wp_schedule_event(time(), $time."min", 'wp_ajax_dt_atp_get_new_tweets');
 }
 
 function dt_atp_uninstall_plugin() {

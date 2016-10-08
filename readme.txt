@@ -1,14 +1,14 @@
 === Another Twitter Plugin ===
 Contributors: kunicmarko20
-Donate Link: 
-Tags: Twitter, Twitter Social, Twitter Custom, Best Twitter, Twitter customizable plugin, fully customizable Twitter plugin, Twitter plugin, Another Twitter Plugin, ATP, Tweets,
+Donate Link:
+Tags: Twitter, Twitter dev, Best Twitter Plugin, Twitter Social, Twitter Custom, Best Twitter, Twitter customizable plugin, fully customizable Twitter plugin, Twitter plugin, Another Twitter Plugin, ATP, Tweets,
 Requires at least: 4.0
 Tested up to: 4.6
 Stable tag: 4.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Twitter plugin that you want, fully customizable style, works with multiple hashtags or usernames and supports wp cron.
+Twitter plugin for developers, plugin that you want and need, fully customizable style, works with multiple hashtags or usernames and you are not limited to only your account for tweets.
 
 == Description ==
 
@@ -56,13 +56,16 @@ No, you will have to add your website to cronjob if you have low traffic.
 
 == Changelog ==
 
-= 1.0.4 = 
+= 1.0.5 =
+* Update wp cron function
+
+= 1.0.4 =
 * Fix problem with regex for #/@ in status output
 
-= 1.0.3.1 = 
+= 1.0.3.1 =
 * Ajax problem fix
 
-= 1.0.3 = 
+= 1.0.3 =
 * Custom Date Format setup
 
 = 1.0.2 =
