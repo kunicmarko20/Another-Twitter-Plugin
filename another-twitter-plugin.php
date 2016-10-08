@@ -64,7 +64,7 @@ add_action('wp_ajax_dt_atp_get_new_tweets', 'dt_atp_get_new_tweets');
 add_action( 'admin_enqueue_scripts', 'dt_atp_extra_javascript_files' );
 
 add_action('init', 'dt_atp_register_shortcodes');
-add_action('my_schedule_event', 'dt_atp_get_new_tweets');
+
 register_uninstall_hook( __FILE__, 'dt_atp_uninstall_plugin' );
 /* !2. SHORTCODES */
 // 2.1
