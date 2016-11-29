@@ -5,7 +5,7 @@
 Plugin Name: Another Twitter Plugin
 Plugin URI: https://wordpress.org/plugins/another-twitter-extension/
 Description: Twitter plugin for developers, plugin that you want and need, fully customizable style, works with multiple hashtags or usernames and you are not limited to only your account for tweets.
-Version: 1.0.5
+Version: 1.0.6
 Author: Marko Kunic
 Author URI: http://kunicmarko.ml
 License: GPL2
@@ -172,23 +172,23 @@ function dt_atp_get_new_tweets(){
 	                $my_tweets = $connection->get('search/tweets', $options);
 	                $my_tweets = json_decode(json_encode($my_tweets),true);
 
-					if(!empty($my_tweets['statuses'][0]['id'])){
-	                $new_currently_active[$title] = $my_tweets['statuses'][0]['id'];
+					if(!empty($my_tweets['statuses'][0]['id_str'])){
+	                $new_currently_active[$title] = $my_tweets['statuses'][0]['id_str'];
 
 
 	                foreach($my_tweets['statuses'] as $t){
-	                    if(in_array($t['id'], $id)){
+	                    if(in_array($t['id_str'], $id)){
 	                        continue;
 	                    }
 	                    else {
-	                        $id[] = $t['id'];
+	                        $id[] = $t['id_str'];
 	                        $twitter_status = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', '<a href="$0" target="_blank" title="$0">$0</a>', $t['text']);
 													$twitter_status = preg_replace('/#(\w*\p{L}+\w*)/u', '<a href="https://twitter.com/search?f=tweets&vertical=default&q=%23\1&src=typd" target="_blank">#\1</a>', $twitter_status);
 													$twitter_status = preg_replace('/@(\w*[a-zA-Z_]+\w*)/', '<a href="https://twitter.com/\1" target="_blank">@\1</a>', $twitter_status);
 	                        $json[] = array(
-	                            'id' => $t['id'],
+	                            'id' => $t['id_str'],
 	                            'created_at' => strtotime($t['created_at']),
-	                            'url' => $t['user']['screen_name']."/status/".$t['id'],
+	                            'url' => $t['user']['screen_name']."/status/".$t['id_str'],
 	                            'screen_name' => $t['user']['screen_name'],
 	                            'status' => $twitter_status,
 	                            'image' => $t['user']['profile_image_url']);
@@ -216,17 +216,17 @@ function dt_atp_get_new_tweets(){
 
 	                $my_tweets = $connection->get('statuses/user_timeline', $options);
 	                $my_tweets = json_decode(json_encode($my_tweets),true);
-	                if(!empty($my_tweets[0]['id'])){
-	                    $new_currently_active[$username] = $my_tweets[0]['id'];
+	                if(!empty($my_tweets[0]['id_str'])){
+	                    $new_currently_active[$username] = $my_tweets[0]['id_str'];
 
 	                    foreach($my_tweets as $t){
 	                        $twitter_status = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', '<a href="$0" target="_blank" title="$0">$0</a>', $t['text']);
 													$twitter_status = preg_replace('/#(\w*\p{L}+\w*)/u', '<a href="https://twitter.com/search?f=tweets&vertical=default&q=%23\1&src=typd" target="_blank">#\1</a>', $twitter_status);
 													$twitter_status = preg_replace('/@(\w*[a-zA-Z_]+\w*)/', '<a href="https://twitter.com/\1" target="_blank">@\1</a>', $twitter_status);
 	                            $json[] = array(
-	                                'id' => $t['id'],
+	                                'id' => $t['id_str'],
 	                                'created_at' => strtotime($t['created_at']),
-	                                'url' => $t['user']['screen_name']."/status/".$t['id'],
+	                                'url' => $t['user']['screen_name']."/status/".$t['id_str'],
 	                                'screen_name' => $t['user']['screen_name'],
 	                                'status' => $twitter_status,
 	                                'image' => $t['user']['profile_image_url']);

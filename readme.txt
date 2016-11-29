@@ -55,6 +55,8 @@ No, you will have to add your website to cronjob if you have low traffic.
 4. Twitter Settings
 
 == Changelog ==
+= 1.0.6 =
+* Fix problem with twitter api returning float for id
 
 = 1.0.5 =
 * Update wp cron function
