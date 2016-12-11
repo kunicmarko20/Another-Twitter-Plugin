@@ -4,8 +4,8 @@
 /*
 Plugin Name: Another Twitter Plugin
 Plugin URI: https://wordpress.org/plugins/another-twitter-extension/
-Description: Twitter plugin for developers, plugin that you want and need, fully customizable style, works with multiple hashtags or usernames and you are not limited to only your account for tweets.
-Version: 1.0.6
+Description: Twitter plugin that you want and need, fully customizable style, works with multiple hashtags or usernames and you are not limited to only your account for tweets.
+Version: 1.0.7
 Author: Marko Kunic
 Author URI: http://kunicmarko.ml
 License: GPL2
@@ -44,8 +44,7 @@ Text Domain: another-twitter-plugin
 
 
 define( 'dt_atp_plugin_dir', plugin_dir_path( __FILE__ ) );
-$dir = explode('wp-content',plugin_dir_url( __FILE__ ));
-define( 'dt_atp_plugin_url', $dir[0] );
+define( 'dt_atp_plugin_url', home_url().'/' );
 /* !1. HOOKS */
 
 
@@ -79,19 +78,24 @@ function dt_atp_register_shortcodes() {
 // hint: our shortcode that displays plugin
 function dt_atp_shortcode() {
 	$dt_atp_status = dt_atp_get_current_options('dashboard');
+        $options_settings = dt_atp_get_current_options('settings');
+        $i = 0;
 	if($dt_atp_status['dt_atp_status_enabled'] == 1){
 		$dt_atp_style = dt_atp_get_current_options('display');
 		$jsons = json_decode(file_get_contents(dt_atp_plugin_dir.'twitter.json'),true);
 
 		$all = "<div class='".str_replace(',',' ',$dt_atp_style['dt_atp_wrapper_class'])."'>";
 
-		foreach($jsons as $json){
+		if (is_array($jsons)) {
+                    foreach($jsons as $json) {
+                        if ($json['status'] === NULL) continue;
+                        if (++$i == $options_settings['dt_atp_number_of_saved_tweets']) break;
 			$types = array("[screen_name]" =>$json['screen_name'],"[status]" =>$json['status'],"[created_at]" => date($dt_atp_style['dt_atp_date_format'],$json['created_at']),"[url]" => "http://www.twitter.com/".$json['url'],"[image]" => $json['image'],"[id]" =>$json['id']);
 			$all .= strtr($dt_atp_style['dt_atp_textarea_style'], $types);
-		}
-
+                    }
 		$all .= "</div>";
 		return $all;
+                }
 	}
 }
 
@@ -136,7 +140,7 @@ function dt_atp_extra_javascript_files() {
 //5.1 get all new tweets
 function dt_atp_get_new_tweets(){
 	if(get_option('dt_atp_status_enabled') == 1 && count(get_option('dt_atp_textbox')) > 0){
-		include_once(plugin_dir_path( __FILE__ ).'twitteroauth/twitteroauth.php');
+		include_once(plugin_dir_path( __FILE__ ).'twitteroauth/autoload.php');
 		$options_twitter = dt_atp_get_current_options('twitter');
 		$options_settings = dt_atp_get_current_options('settings');
 		$currently_active = get_option('dt_atp_currently_active');
@@ -148,7 +152,6 @@ function dt_atp_get_new_tweets(){
 	    $twitter_access_token_secret    = $options_twitter['dt_atp_access_token_secret'];
 
 	    $connection = new TwitterOAuth($twitter_customer_key, $twitter_customer_secret, $twitter_access_token, $twitter_access_token_secret);
-
 	    $json = json_decode(file_get_contents(plugin_dir_path( __FILE__ ).'twitter.json'),true);
 
 		if($options_settings['dt_atp_radio'] == 'hashtags') {
@@ -172,23 +175,23 @@ function dt_atp_get_new_tweets(){
 	                $my_tweets = $connection->get('search/tweets', $options);
 	                $my_tweets = json_decode(json_encode($my_tweets),true);
 
-					if(!empty($my_tweets['statuses'][0]['id_str'])){
-	                $new_currently_active[$title] = $my_tweets['statuses'][0]['id_str'];
+					if(!empty($my_tweets['statuses'][0]['id'])){
+	                $new_currently_active[$title] = $my_tweets['statuses'][0]['id'];
 
 
 	                foreach($my_tweets['statuses'] as $t){
-	                    if(in_array($t['id_str'], $id)){
+	                    if(in_array($t['id'], $id)){
 	                        continue;
 	                    }
 	                    else {
-	                        $id[] = $t['id_str'];
+	                        $id[] = $t['id'];
 	                        $twitter_status = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', '<a href="$0" target="_blank" title="$0">$0</a>', $t['text']);
 													$twitter_status = preg_replace('/#(\w*\p{L}+\w*)/u', '<a href="https://twitter.com/search?f=tweets&vertical=default&q=%23\1&src=typd" target="_blank">#\1</a>', $twitter_status);
 													$twitter_status = preg_replace('/@(\w*[a-zA-Z_]+\w*)/', '<a href="https://twitter.com/\1" target="_blank">@\1</a>', $twitter_status);
 	                        $json[] = array(
-	                            'id' => $t['id_str'],
+	                            'id' => $t['id'],
 	                            'created_at' => strtotime($t['created_at']),
-	                            'url' => $t['user']['screen_name']."/status/".$t['id_str'],
+	                            'url' => $t['user']['screen_name']."/status/".$t['id'],
 	                            'screen_name' => $t['user']['screen_name'],
 	                            'status' => $twitter_status,
 	                            'image' => $t['user']['profile_image_url']);
@@ -216,17 +219,18 @@ function dt_atp_get_new_tweets(){
 
 	                $my_tweets = $connection->get('statuses/user_timeline', $options);
 	                $my_tweets = json_decode(json_encode($my_tweets),true);
-	                if(!empty($my_tweets[0]['id_str'])){
-	                    $new_currently_active[$username] = $my_tweets[0]['id_str'];
+
+	                if(!empty($my_tweets[0]['id'])){
+	                    $new_currently_active[$username] = $my_tweets[0]['id'];
 
 	                    foreach($my_tweets as $t){
 	                        $twitter_status = preg_replace('~(?:(https?)://([^\s<]+)|(www\.[^\s<]+?\.[^\s<]+))(?<![\.,:])~i', '<a href="$0" target="_blank" title="$0">$0</a>', $t['text']);
 													$twitter_status = preg_replace('/#(\w*\p{L}+\w*)/u', '<a href="https://twitter.com/search?f=tweets&vertical=default&q=%23\1&src=typd" target="_blank">#\1</a>', $twitter_status);
 													$twitter_status = preg_replace('/@(\w*[a-zA-Z_]+\w*)/', '<a href="https://twitter.com/\1" target="_blank">@\1</a>', $twitter_status);
 	                            $json[] = array(
-	                                'id' => $t['id_str'],
+	                                'id' => $t['id'],
 	                                'created_at' => strtotime($t['created_at']),
-	                                'url' => $t['user']['screen_name']."/status/".$t['id_str'],
+	                                'url' => $t['user']['screen_name']."/status/".$t['id'],
 	                                'screen_name' => $t['user']['screen_name'],
 	                                'status' => $twitter_status,
 	                                'image' => $t['user']['profile_image_url']);

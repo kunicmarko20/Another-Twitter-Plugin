@@ -3,8 +3,8 @@ Contributors: kunicmarko20
 Donate Link:
 Tags: Twitter, Twitter dev, Best Twitter Plugin, Twitter Social, Twitter Custom, Best Twitter, Twitter customizable plugin, fully customizable Twitter plugin, Twitter plugin, Another Twitter Plugin, ATP, Tweets,
 Requires at least: 4.0
-Tested up to: 4.6
-Stable tag: 4.6
+Tested up to: 4.7
+Stable tag: 4.7
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
