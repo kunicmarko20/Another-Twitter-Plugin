@@ -1,5 +1,10 @@
 <?php
 
+namespace Another_Twitter_Plugin\Admin;
+
+use Another_Twitter_Plugin\Includes\AnotherTwitterPlugin;
+use Another_Twitter_Plugin\Admin\pages as Page;
+
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -20,28 +25,11 @@
  * @subpackage Plugin_Name/admin
  * @author     Your Name <email@example.com>
  */
-class Another_Twitter_Plugin_Admin {
+class Admin {
         
-        const UsernameURL = 'statuses/user_timeline';
-        const HashtagURL = 'search/tweets';
-	/**
-	 * The ID of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $plugin_name    The ID of this plugin.
-	 */
-	private $plugin_name;
+        const USERNAME_URL = 'statuses/user_timeline';
+        const HASHTAG_URL = 'search/tweets';
 
-	/**
-	 * The version of this plugin.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 * @var      string    $version    The current version of this plugin.
-	 */
-	private $version;
-        
 	/**
 	 * The version of this plugin.
 	 *
@@ -57,10 +45,8 @@ class Another_Twitter_Plugin_Admin {
 	 * @param      string    $plugin_name       The name of this plugin.
 	 * @param      string    $version    The version of this plugin.
 	 */
-	public function __construct( $plugin_name, $version ) {
+	public function __construct() {
 
-		$this->plugin_name = $plugin_name;
-		$this->version = $version;
 
 	}
 
@@ -71,7 +57,7 @@ class Another_Twitter_Plugin_Admin {
 	 */
 	public function enqueue_styles() {
             
-            wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/loader.css', [], $this->version, 'all' );
+            wp_enqueue_style( AnotherTwitterPlugin::PLUGIN_NAME, plugin_dir_url( __FILE__ ) . 'css/loader.css', [], AnotherTwitterPlugin::VERSION, 'all' );
 
 	}
 
@@ -82,33 +68,33 @@ class Another_Twitter_Plugin_Admin {
 	 */
 	public function enqueue_scripts() {
             
-		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/textarea.js', ['jquery' ], $this->version, false );
+		wp_enqueue_script( AnotherTwitterPlugin::PLUGIN_NAME, plugin_dir_url( __FILE__ ) . 'js/textarea.js', ['jquery' ], AnotherTwitterPlugin::VERSION, false );
 
 	}
         
-        public function admin_menu() {
-            
-            $dashboard = new DashboardPage($this->get_plugin_name(), $this->get_version());
-            $display = new DisplayPage($this->get_plugin_name(), $this->get_version());
-            $pluginSettings = new PluginSettingsPage($this->get_plugin_name(), $this->get_version());
-            $twitterSettings = new TwitterSettingsPage($this->get_plugin_name(), $this->get_version());
-            $manual = new Manual($this->get_plugin_name(), $this->get_version());
-            $top_menu_item = 'dt_atp_dashboard_admin_page';
-            $function = 'render';
-	    add_menu_page( '', 'Another Twitter', 'manage_options', $top_menu_item, [$dashboard, $function], 'dashicons-twitter' );
-
-	    // dashboard
-	    add_submenu_page($top_menu_item, '', 'Dashboard', 'manage_options', $top_menu_item, [$dashboard, $function] );
-	    // plugin settings
-	    add_submenu_page($top_menu_item, '', 'Display', 'manage_options', 'dt_atp_display_style_admin_page', [$display, $function] );
-	    // plugin settings
-	    add_submenu_page($top_menu_item, '', 'Plugin Settings', 'manage_options', 'dt_atp_plugin_settings_admin_page', [$pluginSettings, $function] );
-	    // twitter settings
-	    add_submenu_page($top_menu_item, '', 'Twitter Settings', 'manage_options', 'dt_atp_twitter_settings_admin_page', [$twitterSettings, $function] );
-            // manual
-            add_submenu_page($top_menu_item, '', 'Manual', 'manage_options', 'dt_atp_twitter_settings_admin_page', [$manual, $function] );
-
-        }
+//        public function admin_menu() {
+//            
+//            $dashboard = new Page\Dashboard();
+//            $display = new Page\Display();
+//            $pluginSettings = new Page\PluginSettings();
+//            $twitterSettings = new Page\TwitterSettings();
+//            $manual = new Page\Manual();
+//            $top_menu_item = 'dt_atp_dashboard_admin_page';
+//
+//	    add_menu_page( '', 'Another Twitter', 'manage_options', $top_menu_item, [$dashboard, self::ADMIN_MENU_FUNCTION], 'dashicons-twitter' );
+//
+//	    // dashboard
+//	    add_submenu_page($top_menu_item, '', 'Dashboard', 'manage_options', $top_menu_item, [$dashboard, self::ADMIN_MENU_FUNCTION] );
+//	    // plugin settings
+//	    add_submenu_page($top_menu_item, '', 'Display', 'manage_options', 'dt_atp_display_style_admin_page', [$display, self::ADMIN_MENU_FUNCTION] );
+//	    // plugin settings
+//	    add_submenu_page($top_menu_item, '', 'Plugin Settings', 'manage_options', 'dt_atp_plugin_settings_admin_page', [$pluginSettings, self::ADMIN_MENU_FUNCTION] );
+//	    // twitter settings
+//	    add_submenu_page($top_menu_item, '', 'Twitter Settings', 'manage_options', 'dt_atp_twitter_settings_admin_page', [$twitterSettings, self::ADMIN_MENU_FUNCTION] );
+//            // manual
+//            add_submenu_page($top_menu_item, '', 'Manual', 'manage_options', 'dt_atp_twitter_settings_admin_page', [$manual, self::ADMIN_MENU_FUNCTION] );
+//
+//        }
         public function get_new_tweets(){
             $terms = get_option('dt_atp_term');
             if(get_option('dt_atp_status_enabled') == 0 || count($terms) == 0) return;
@@ -134,7 +120,7 @@ class Another_Twitter_Plugin_Admin {
             foreach($terms as $term){
                 if (empty($term['value'])) continue;
                 $options = $this->setupOptions($term,$number_of_tweets_to_fetch,$last_saved_term_id );
-                $tweets_result = $connection->get($term['type'] == 'username' ? self::UsernameURL : self::HashtagURL, $options);
+                $tweets_result = $connection->get($term['type'] == 'username' ? self::USERNAME_URL : self::HASHTAG_URL, $options);
 	        $tweets = json_decode(json_encode($tweets_result),true);
                 if($term['type'] == 'hashtag'){
                     $tweets = $tweets['statuses'];

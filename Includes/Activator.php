@@ -1,5 +1,6 @@
 <?php
 
+namespace Another_Twitter_Plugin\Includes;
 /**
  * Fired during plugin activation.
  *
@@ -10,8 +11,8 @@
  * @subpackage another-twitter-plugin/includes
  * @author     Marko Kunic <kunicmarko20@gmail.com>
  */
-class Another_Twitter_Plugin_Activator {
-
+class Activator
+{
 	/**
 	 * Add default values for options to database.
 	 *
@@ -25,8 +26,9 @@ class Another_Twitter_Plugin_Activator {
             add_option('dt_atp_number_of_saved_tweets',200);
             add_option('dt_atp_cron_time',5);
             add_option('dt_atp_textbox',[]);
-            add_option('dt_atp_textarea_style',$this->getDefaultPreviewHtml());
+            add_option('dt_atp_textarea_style',self::getDefaultPreviewHtml());
 	}
+        
         /**
 	 * Default html placeholder for preview of data.
 	 *
@@ -44,5 +46,4 @@ class Another_Twitter_Plugin_Activator {
                         </div>
                     </section>';
         }
-
 }

@@ -1,5 +1,7 @@
 <?php
 
+namespace Another_Twitter_Plugin\Includes;
+
 /**
  * Register all actions and filters for the plugin.
  *
@@ -11,7 +13,7 @@
  * @subpackage another-twitter-plugin/includes
  * @author     Marko Kunic <kunicmarko20@gmail.com>
  */
-class Another_Twitter_Plugin_Loader {
+class Loader {
 
 	/**
 	 * The array of actions registered with WordPress.

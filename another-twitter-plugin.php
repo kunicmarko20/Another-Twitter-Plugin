@@ -1,5 +1,7 @@
 <?php
 
+use Another_Twitter_Plugin\Includes\AnotherTwitterPlugin;
+use Another_Twitter_Plugin\Includes\Activator;
 /**
  *
  * @link              http://example.com
@@ -23,23 +25,20 @@
 if ( ! defined( 'WPINC' ) ) {
 	die;
 }
-
+require_once plugin_dir_path( __FILE__ ) . 'autoload.php';
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-plugin-name-activator.php
  */
 function activate_plugin_name() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/another-twitter-plugin-activator.php';
-	Another_Twitter_Plugin_Activator::activate();
+    Activator::activate();
 }
-
 register_activation_hook( __FILE__, 'activate_plugin_name' );
 
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-plugin-name.php';
 
 /**
  * Begins execution of the plugin.
@@ -50,10 +49,10 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-plugin-name.php';
  *
  * @since    1.0.0
  */
-function run_plugin_name() {
+function run() {
 
-	$plugin = new Another_Twitter_Plugin();
+	$plugin = new AnotherTwitterPlugin();
 	$plugin->run();
 
 }
-run_plugin_name();
+run();

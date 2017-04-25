@@ -11,6 +11,6 @@
  *
  * @author Z
  */
-class ManualPage {
+class Manual {
     //put your code here
 }

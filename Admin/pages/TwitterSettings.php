@@ -11,6 +11,6 @@
  *
  * @author Z
  */
-class TwitterSettingsPage {
+class TwitterSettings {
     //put your code here
 }

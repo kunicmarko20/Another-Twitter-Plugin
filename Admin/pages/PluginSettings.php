@@ -7,10 +7,10 @@
  */
 
 /**
- * Description of Display
+ * Description of PluginSettings
  *
  * @author Z
  */
-class DisplayPage {
+class PluginSettings {
     //put your code here
 }
