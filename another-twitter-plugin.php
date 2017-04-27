@@ -34,7 +34,8 @@ function activate_plugin_name() {
     Activator::activate();
 }
 register_activation_hook( __FILE__, 'activate_plugin_name' );
-
+define( 'dt_atp_plugin_dir', plugin_dir_path( __FILE__ ) );
+define( 'dt_atp_plugin_url', home_url().'/' );
 /**
  * The core plugin class that is used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.

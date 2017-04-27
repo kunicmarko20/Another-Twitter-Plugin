@@ -68,36 +68,14 @@ class Admin {
 	 */
 	public function enqueue_scripts() {
             
-		wp_enqueue_script( AnotherTwitterPlugin::PLUGIN_NAME, plugin_dir_url( __FILE__ ) . 'js/textarea.js', ['jquery' ], AnotherTwitterPlugin::VERSION, false );
+		wp_enqueue_script( AnotherTwitterPlugin::PLUGIN_NAME, plugin_dir_url( __FILE__ ) . 'js/script.js', ['jquery' ], AnotherTwitterPlugin::VERSION, false );
 
 	}
-        
-//        public function admin_menu() {
-//            
-//            $dashboard = new Page\Dashboard();
-//            $display = new Page\Display();
-//            $pluginSettings = new Page\PluginSettings();
-//            $twitterSettings = new Page\TwitterSettings();
-//            $manual = new Page\Manual();
-//            $top_menu_item = 'dt_atp_dashboard_admin_page';
-//
-//	    add_menu_page( '', 'Another Twitter', 'manage_options', $top_menu_item, [$dashboard, self::ADMIN_MENU_FUNCTION], 'dashicons-twitter' );
-//
-//	    // dashboard
-//	    add_submenu_page($top_menu_item, '', 'Dashboard', 'manage_options', $top_menu_item, [$dashboard, self::ADMIN_MENU_FUNCTION] );
-//	    // plugin settings
-//	    add_submenu_page($top_menu_item, '', 'Display', 'manage_options', 'dt_atp_display_style_admin_page', [$display, self::ADMIN_MENU_FUNCTION] );
-//	    // plugin settings
-//	    add_submenu_page($top_menu_item, '', 'Plugin Settings', 'manage_options', 'dt_atp_plugin_settings_admin_page', [$pluginSettings, self::ADMIN_MENU_FUNCTION] );
-//	    // twitter settings
-//	    add_submenu_page($top_menu_item, '', 'Twitter Settings', 'manage_options', 'dt_atp_twitter_settings_admin_page', [$twitterSettings, self::ADMIN_MENU_FUNCTION] );
-//            // manual
-//            add_submenu_page($top_menu_item, '', 'Manual', 'manage_options', 'dt_atp_twitter_settings_admin_page', [$manual, self::ADMIN_MENU_FUNCTION] );
-//
-//        }
-        public function get_new_tweets(){
+
+        public function get_new_tweets()
+        {
             $terms = get_option('dt_atp_term');
-            if(get_option('dt_atp_status_enabled') == 0 || count($terms) == 0) return;
+            if (get_option('dt_atp_status_enabled') == 0 || count($terms) == 0) return;
             include_once(plugin_dir_path( __FILE__ ).'twitteroauth/autoload.php');
 
 	    $connection = new TwitterOAuth(get_option('dt_atp_customer_key'), get_option('dt_atp_customer_secret'), get_option('dt_atp_access_token'), get_option('dt_atp_access_token_secret'));
@@ -192,5 +170,15 @@ class Admin {
 	    $json = array_slice($json, 0, get_option('dt_atp_number_of_saved_tweets'));
             
             return $json;
+        }
+
+        public function reset_tweets(){
+            if (isset($_POST['btnReset'])) {
+                update_option('dt_atp_last_update_time',time());
+                file_put_contents(dt_atp_plugin_dir.'Includes/shared/twitter.json', json_encode(new \stdClass));
+            }
+            $redirect = ($_SERVER["HTTP_REFERER"] != '' ? $_SERVER["HTTP_REFERER"] : site_url());
+            header("Location: " . $redirect);
+            exit;
         }
 }

@@ -35,7 +35,7 @@ class DisplaySettings extends AbstractPage
                             <h3>Format your Tweets</h3>
 				<?php
 					settings_fields( 'display_settings_option_group' );
-                                        do_settings_fields( 'display-settings-admin', 'display_settings_setting_section' );
+                        do_settings_fields( 'display-settings-admin', 'display_settings_setting_section' );
 					submit_button();
 				?>
 			</form>
@@ -51,41 +51,42 @@ class DisplaySettings extends AbstractPage
 
 
 		add_settings_field(
-			'test2_1', // id
+			'dt_atp_style', // id
 			'', // title
-			array( $this, 'test2_1_callback' ), // callback
+			array( $this, 'dt_atp_style_callback' ), // callback
 			'display-settings-admin', // page
 			'display_settings_setting_section' // section
 		);
+        add_settings_field(
+            'dt_atp_wrapper_class', // id
+            '<strong>Output date format:</strong>', // title
+            array( $this, 'dt_atp_wrapper_class_callback' ), // callback
+            'display-settings-admin', // page
+            'display_settings_setting_section' // section
+        );
                 add_settings_field(
-			'test_0', // id
+			'dt_atp_date_format', // id
 			'<strong>Add class to wrapper div:</strong>', // title
-			array( $this, 'test_0_callback' ), // callback
+			array( $this, 'dt_atp_date_format_callback' ), // callback
 			'display-settings-admin', // page
 			'display_settings_setting_section' // section
 		);
                                 
-		add_settings_field(
-			'test3_2', // id
-			'<strong>Output date format:</strong>', // title
-			array( $this, 'test3_2_callback' ), // callback
-			'display-settings-admin', // page
-			'display_settings_setting_section' // section
-		);
+
 	}
 
 	public function display_settings_sanitize($input) {
 		$sanitary_values = array();
-		if ( isset( $input['test_0'] ) ) {
-			$sanitary_values['test_0'] = sanitize_text_field( $input['test_0'] );
+		if ( isset( $input['dt_atp_date_format'] ) ) {
+			$sanitary_values['dt_atp_date_format'] = sanitize_text_field( $input['dt_atp_date_format'] );
 		}
 
-		if ( isset( $input['test2_1'] ) ) {
-			$sanitary_values['test2_1'] = esc_textarea( $input['test2_1'] );
+		if ( isset( $input['dt_atp_style'] ) ) {
+			$sanitary_values['dt_atp_style'] = esc_textarea( $input['dt_atp_style'] );
 		}
 
-		if ( isset( $input['test3_2'] ) ) {
-			$sanitary_values['test3_2'] = sanitize_text_field( $input['test3_2'] );
+		if ( isset( $input['dt_atp_wrapper_class'] ) ) {
+			$sanitary_values['dt_atp_wrapper_class'] = sanitize_text_field( $input['dt_atp_wrapper_class'] );
 		}
 
 		return $sanitary_values;
@@ -95,21 +96,21 @@ class DisplaySettings extends AbstractPage
 		
 	}
 
-	public function test_0_callback() {
+	public function dt_atp_date_format_callback() {
 		printf(
-			'<input class="regular-text" type="text" name="display_settings_option_name[test_0]" id="test_0" value="%s"><br/>',
-			isset( $this->display_settings_options['test_0'] ) ? esc_attr( $this->display_settings_options['test_0']) : ''
+			' <input class="regular-text" type="text" name="display_settings_option_name[dt_atp_date_format]" id="dt_atp_date_format" value="%s">',
+			isset( $this->display_settings_options['dt_atp_date_format'] ) ? esc_attr( $this->display_settings_options['dt_atp_date_format']) : ''
 		);
 	}
 
-	public function test2_1_callback() {
+	public function dt_atp_style_callback() {
            require_once __DIR__.'/../partials/display-settings-textarea.php';
 	}
 
-	public function test3_2_callback() {
+	public function dt_atp_wrapper_class_callback() {
 		printf(
-			'<input class="regular-text" type="text" name="display_settings_option_name[test3_2]" id="test3_2" value="%s">',
-			isset( $this->display_settings_options['test3_2'] ) ? esc_attr( $this->display_settings_options['test3_2']) : ''
+			' <input class="regular-text" type="text" name="display_settings_option_name[dt_atp_wrapper_class]" id="dt_atp_wrapper_class" value="%s"><br/>',
+			isset( $this->display_settings_options['dt_atp_wrapper_class'] ) ? esc_attr( $this->display_settings_options['dt_atp_wrapper_class']) : ''
 		);
 	}
 

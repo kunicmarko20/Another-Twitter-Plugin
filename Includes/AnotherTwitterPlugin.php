@@ -4,6 +4,7 @@ namespace Another_Twitter_Plugin\Includes;
 
 use Another_Twitter_Plugin\Admin\Admin;
 use Another_Twitter_Plugin\Admin\pages as Page;
+
 /**
  * The file that defines the core plugin class
  *
@@ -31,7 +32,8 @@ use Another_Twitter_Plugin\Admin\pages as Page;
  * @subpackage Plugin_Name/includes
  * @author     Your Name <email@example.com>
  */
-class AnotherTwitterPlugin {
+class AnotherTwitterPlugin
+{
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -106,7 +108,10 @@ class AnotherTwitterPlugin {
             
                 Page\Dashboard::render();
                 Page\DisplaySettings::render();
-                
+                Page\PluginSettings::render();
+                Page\TwitterSettings::render();
+                Page\Manual::render();
+
 //                $display = new Page\Display();
 //                $pluginSettings = new Page\PluginSettings();
 //                $twitterSettings = new Page\TwitterSettings();
